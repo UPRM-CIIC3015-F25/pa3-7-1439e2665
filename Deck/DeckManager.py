@@ -144,8 +144,10 @@ class DeckManager:
     #   object for each valid combination. If a matching image is not found, skip that card.
     #   Add each created Card to a list called 'deck' and return the completed list at the end.
     def createDeck(self, subLevel: SubLevel = None):
-        cardImages = self.load_card_images(subLevel)
         deck = []
+        cardImages = self.load_card_images(subLevel)
+        for card,image in cardImages.items():
+            deck.append(Card(suit=card[0], rank=card[1], image=image))
         return deck
 
     # TODO (TASK 5.1): Complete the priceMap variable by assigning each joker a price.
