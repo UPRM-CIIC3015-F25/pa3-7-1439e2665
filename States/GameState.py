@@ -554,7 +554,22 @@ class GameState(State):
     #   with the ones after it. Depending on the mode, sort by rank first or suit first, swapping cards when needed
     #   until the entire hand is ordered correctly.
     def SortCards(self, sort_by: str = "suit"):
-        suitOrder = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES]         # Define the order of suits
+        suitOrder = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES] # Define the order of suits
+        if sort_by == "suit":
+            for pases in range(len(self.hand)-1):
+                for hand in range(len(self.hand)- 1 - pases):
+                    if suitOrder.index(self.hand[hand].suit) > suitOrder.index(self.hand[hand+1].suit):
+                        self.hand[hand], self.hand[hand+1] = self.hand[hand+1], self.hand[hand]
+                    else:
+                        pass
+        if sort_by == "rank":
+            for pases in range(len(self.hand)-1):
+                for hand in range(len(self.hand) - 1 - pases):
+                    if self.hand[hand].rank.value < self.hand[hand+1].rank.value:
+                        self.hand[hand], self.hand[hand+1] = self.hand[hand+1], self.hand[hand]
+                    else:
+                        pass
+
         self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
 
     def checkHoverCards(self):
