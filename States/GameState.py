@@ -563,19 +563,10 @@ class GameState(State):
                     else:
                         pass
         if sort_by == "rank":
-            for pases in range(len(self.hand)-1):
+            for pases in range(len(self.hand) - 1):
                 for hand in range(len(self.hand) - 1 - pases):
-                    if self.hand[hand].rank.value == 14:
-                        if 1 > self.hand[hand + 1].rank.value:
-                            self.hand[hand], self.hand[hand + 1] = self.hand[hand + 1], self.hand[hand]
-                        else:
-                            pass
-                    else:
-                        if self.hand[hand].rank.value > self.hand[hand+1].rank.value:
-                            self.hand[hand], self.hand[hand+1] = self.hand[hand+1], self.hand[hand]
-                        else:
-                            pass
-
+                    if self.hand[hand].rank.value > self.hand[hand + 1].rank.value:
+                        self.hand[hand], self.hand[hand + 1] = self.hand[hand + 1], self.hand[hand]
         self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
 
     def checkHoverCards(self):
