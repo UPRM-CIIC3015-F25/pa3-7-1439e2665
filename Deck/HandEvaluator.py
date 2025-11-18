@@ -10,7 +10,7 @@ from Cards.Card import Card, Rank
 #   and flags to determine if the hand is: "Four of a Kind", "Full House", "Flush", "Straight", "Three of a Kind",
 #   "Two Pair", "One Pair", or "High Card". Return a string with the correct hand type at the end.
 
-#helper function bc im not going to create a new sorting code when i alr did it
+#helper function bc im not going to create a new sorting algorithm code when i alr did it :|
 def SortCards(hands):
     for pases in range(len(hands) - 1):
         for hand in range(len(hands) - 1 - pases):
@@ -22,16 +22,18 @@ def evaluate_hand(hand: list[Card]):
     SortCards(hand)
     values = [card.rank.value for card in hand]
     pair = 0
-    straight =True
+    straight = True
 
-
+#Checking if the hand can be a flush
     if len(hand) == 5:
         flush = True
     else:
         flush = False
 
     for hands in range(len(hand)):
+        #Putting all the values in a dict (Pairs)
         hand_org[hand[hands].rank.value]=hand_org.get(hand[hands].rank.value,0)+1
+        #Checking if every card is the same suit (Flush)
         if hand[0].suit != hand[hands].suit and flush:
             flush = False
 
@@ -39,7 +41,7 @@ def evaluate_hand(hand: list[Card]):
         if value == 2:
             pair +=1
 
-###########-----STRAIGHT DETECTION-----###########
+#Straight Detection
     if len(values) == 5:
         if values == [2,3,4,5,14]:
             straight = True
@@ -48,6 +50,8 @@ def evaluate_hand(hand: list[Card]):
                 if values[i]+1 != values[i + 1]:
                     straight = False
                     break
+    else:
+        straight = False
 
 
     if straight and flush:
