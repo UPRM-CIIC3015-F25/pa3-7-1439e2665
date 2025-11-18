@@ -1,14 +1,27 @@
 import pygame
 from States.Core.StateClass import State
 import math
+from moviepy import VideoFileClip, vfx
+import sys
 
 class StartState(State):
     def __init__(self, nextState: str = ""):
         super().__init__(nextState)
         # ----------------------------- Background --------------------------------
-        self.backgroundImage = pygame.image.load('Graphics/Backgrounds/introBackground.jpeg')
-        self.background = pygame.transform.scale(self.backgroundImage, (1300, 750))
-        self.backgroundRect = self.background.get_rect(topleft=(0, 0))
+        # ----------------------------- Video Background --------------------------------
+
+        self.video_path = "Graphics/Backgrounds/introBackground.mp4"
+        self.clip = VideoFileClip(self.video_path).resized((1300, 750))
+
+        # Create a frame generator and initialize first frame
+        self.frame_generator = self.clip.iter_frames(fps=30, dtype='uint8')
+        self.current_frame = next(self.frame_generator)
+
+        # For blitting
+        self.backgroundRect = pygame.Rect(0, 0, 1300, 750)
+
+        self.clock = pygame.time.Clock()
+        self.running = True
 
         # ----------------------------- Title -------------------------------------
         self.titleImage = pygame.image.load('Graphics/Backgrounds/balatroTitle.png')
@@ -78,13 +91,27 @@ class StartState(State):
 
     # ----------------------------- Update ------------------------------------
     def update(self):
+        try:
+            frame = next(self.frame_generator)
+            self.current_frame = next(self.frame_generator)
+        except StopIteration:
+            # Restart generator when video ends
+            print("Looping bg...")
+            self.frame_generator = self.clip.iter_frames(fps=30, dtype='uint8')
+            self.current_frame = next(self.frame_generator)
+
+        # Convert frame to Pygame surface
+        frame_surface = pygame.surfarray.make_surface(self.current_frame.swapaxes(0, 1))
+        State.screen.blit(frame_surface, self.backgroundRect)
+
         self.breathTime += self.breathSpeed  # increment small delta each frame
         self.updateBreathTitle()
         self.draw()
 
     # ----------------------------- Draw --------------------------------------
     def draw(self):
-        State.screen.blit(self.background, self.backgroundRect)
+        frame_surface = pygame.surfarray.make_surface(self.current_frame.swapaxes(0, 1))
+        State.screen.blit(frame_surface, (0, 0))
         State.screen.blit(self.title, self.titleRect)
         State.screen.blit(self.titleCard, self.titleCardRect)
 
