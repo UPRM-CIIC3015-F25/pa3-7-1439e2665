@@ -1,5 +1,6 @@
 import pygame
 from States.Core.StateClass import State
+from moviepy import VideoFileClip
 
 
 class GameWinState(State):
@@ -18,22 +19,36 @@ class GameWinState(State):
         self.quit_rect.center = (self.screen_center[0], self.screen_center[1] + 110)
 
         # Background image (optional)
-        self.bg = pygame.image.load('Graphics/Backgrounds/gameplayBG.jpg')
-        self.bg = pygame.transform.scale(self.bg, (1300, 750))
+        self.video_path = "Graphics/Backgrounds/gameplayBG.mp4"
+        self.clip = VideoFileClip(self.video_path)
+        # Resize clip to match screen
+        self.clip = self.clip.resized((1300, 750))
+        # Create a frame generator
+        self.frame_generator = self.clip.iter_frames(fps=30, dtype="uint8")
+        # Initialize background rect (like your original image)
+        self.backgroundRect = pygame.Rect(0, 0, 1300, 750)
+        # Current frame placeholder
+        self.current_frame = None
         # TV overlay (CRT filter)
         self.tvOverlay = pygame.image.load('Graphics/Backgrounds/CRT.png').convert_alpha()
         self.tvOverlay = pygame.transform.scale(self.tvOverlay, (1300, 750))
 
     def update(self):
-        # nothing to update statically here
+        try:
+            frame = next(self.frame_generator)
+            # Convert frame to Pygame surface
+            self.current_frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+        except StopIteration:
+            # Video ended — restart the generator to loop
+            self.frame_generator = self.clip.iter_frames(fps=30, dtype="uint8")
+            frame = next(self.frame_generator)
+            self.current_frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
         self.draw()
 
     def draw(self):
         # Background
-        if self.bg:
-            self.screen.blit(self.bg, (0, 0))
-        else:
-            self.screen.fill((6, 6, 20))
+        if self.current_frame:
+            State.screen.blit(self.current_frame, self.backgroundRect)
 
         # Panel (centered rectangle)
         panel_w, panel_h = 720, 320

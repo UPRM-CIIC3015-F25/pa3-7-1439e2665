@@ -1,6 +1,7 @@
 import pygame
 from States.Core.StateClass import State
 from Levels.LevelManager import LevelManager
+from moviepy import VideoFileClip
 
 
 class PlayerInfo(State):
@@ -24,8 +25,16 @@ class PlayerInfo(State):
         self.levelFinished = False  # Flag to trigger level selection screen
 
         # --------------------------------Images----------------------------------------------
-        self.backgroundImage = pygame.image.load('Graphics/Backgrounds/gameplayBG.jpg')
-        self.background = pygame.transform.scale(self.backgroundImage, (1300, 750))
+        self.video_path = "Graphics/Backgrounds/gameplayBG.mp4"
+        self.clip = VideoFileClip(self.video_path)
+        # Resize clip to match screen
+        self.clip = self.clip.resized((1300, 750))
+        # Create a frame generator
+        self.frame_generator = self.clip.iter_frames(fps=30, dtype="uint8")
+        # Initialize background rect (like your original image)
+        self.backgroundRect = pygame.Rect(0, 0, 1300, 750)
+        # Current frame placeholder
+        self.current_frame = None
         self.blindImage = self.levelManager.curSubLevel.image  # Get image from current level
 
         # -------------------------------Text Fonts-------------------------------------------
@@ -92,21 +101,42 @@ class PlayerInfo(State):
 
     def update(self):
         # Update smallBlind rotation
+        try:
+            frame = next(self.frame_generator)
+            # Convert frame to Pygame surface
+            self.current_frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+        except StopIteration:
+            # Video ended — restart the generator to loop
+            self.frame_generator = self.clip.iter_frames(fps=30, dtype="uint8")
+            frame = next(self.frame_generator)
+            self.current_frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+
         self.smallBlindAngle += self.smallBlindDirection * self.smallBlindSpeed
         if abs(self.smallBlindAngle) >= self.smallBlindMaxAngle:
             self.smallBlindDirection *= -1  # Reverse direction when max angle reached
 
         # Update background based on whether current level is a boss level
         if self.levelManager.curSubLevel.bossLevel == "":
-            self.backgroundImage = pygame.image.load('Graphics/Backgrounds/gameplayBG.jpg')
-            self.background = pygame.transform.scale(self.backgroundImage, (1300, 750))
+            self.video_path = "Graphics/Backgrounds/gameplayBG.mp4"
+            self.clip = VideoFileClip(self.video_path)
+            # Resize clip to match screen
+            self.clip = self.clip.resized((1300, 750))
+            # Create a frame generator
+            self.frame_generator = self.clip.iter_frames(fps=30, dtype="uint8")
+            # Initialize background rect (like your original image)
+            self.backgroundRect = pygame.Rect(0, 0, 1300, 750)
+            # Current frame placeholder
+            self.current_frame = None
+
         else:
             self.backgroundImage = pygame.image.load('Graphics/Backgrounds/bossBG.png')
             self.background = pygame.transform.scale(self.backgroundImage, (1300, 750))
         self.draw() # draw the updated player info panel
 
+
     def draw(self):
-        self.screen.blit(self.background, (0, 0))
+        if self.current_frame:
+            State.screen.blit(self.current_frame, self.backgroundRect)
         pygame.draw.rect(State.screen, (50, 50, 50), self.leftRect)
         pygame.draw.rect(State.screen, 'blue', self.leftRect, 1)
         self.leftRectSurface.fill((0, 0, 0, 0))

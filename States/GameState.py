@@ -5,6 +5,7 @@ from States.Core.StateClass import State
 from Cards.Card import Suit, Rank
 from States.Core.PlayerInfo import PlayerInfo
 from Deck.HandEvaluator import evaluate_hand
+import cv2
 
 
 HAND_SCORES = {
@@ -51,8 +52,18 @@ class GameState(State):
         self.gameOverSound.set_volume(0.6)  # adjust loudness if needed
 
         # --------------------------------Images----------------------------------------------
-        self.backgroundImage = pygame.image.load('Graphics/Backgrounds/gameplayBG.jpg')
-        self.background = pygame.transform.scale(self.backgroundImage, (1300, 750))
+        # Video path
+        self.cap = cv2.VideoCapture("Graphics/Backgrounds/gameplayBG.mp4")
+        ret, frame = self.cap.read()
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            self.current_frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+            self.backgroundRect = self.current_frame.get_rect()
+        else:
+            # fallback if video can't load
+            self.current_frame = pygame.Surface((800, 600))
+            self.backgroundRect = self.current_frame.get_rect()
+
         self.smallBlind = pygame.image.load('Graphics/Backgrounds/Blinds/smallBlind.png')
 
         self.tvOverlay = pygame.image.load('Graphics/Backgrounds/CRT.png').convert_alpha()
@@ -145,6 +156,16 @@ class GameState(State):
         destSurface.blit(shade, rect.topleft)
 
     def update(self):
+        ret, frame = self.cap.read()
+        if not ret:
+            # Loop video
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = self.cap.read()
+        if ret:
+            frame = cv2.resize(frame, (1300, 750))
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            self.current_frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+
         # Always update LevelManager first so win/levelFinished flags are fresh
         self.playerInfo.levelManager.update()
 
@@ -239,6 +260,8 @@ class GameState(State):
 
     def draw(self):
         # --- Call funcions ---
+        if self.current_frame:
+            State.screen.blit(self.current_frame, self.backgroundRect)
         self.playerInfo.update()
         self.drawDeckContainer()
         self.drawCardsInHand()

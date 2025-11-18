@@ -50,23 +50,21 @@ def evaluate_hand(hand: list[Card]):
                     break
 
 
-
-    if 3 in hand_org.values() and 2 in hand_org.values():
-        return "Full House"
-    elif 4 in hand_org.values():
-        return "Four of a Kind"
-    elif 3 in hand_org.values():
-        return "Three of a Kind"
-    elif pair == 1:
-        return "One Pair"
-    elif pair == 2:
-        return "Two Pair"
     if straight and flush:
         return "Straight Flush"
+    elif 4 in hand_org.values():
+        return "Four of a Kind"
+    elif 3 in hand_org.values() and 2 in hand_org.values():
+        return "Full House"
     elif flush:
         return "Flush"
     elif straight:
         return "Straight"
-
+    elif 3 in hand_org.values():
+        return "Three of a Kind"
+    elif pair == 2:
+        return "Two Pair"
+    elif pair == 1:
+        return "One Pair"
     else:
         return "High Card" # If none of the above, it's High Card
