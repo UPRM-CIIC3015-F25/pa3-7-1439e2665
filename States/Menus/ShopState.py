@@ -100,6 +100,8 @@ class ShopState(State):
     def activatePlanet(self, planet):
         keys = HAND_SCORES.keys()
 
+
+
     # ---------- Helpers ----------
     def _wrap_lines(self, text, font, max_width):
         words = text.split()
