@@ -572,8 +572,6 @@ class GameState(State):
         else:
             return min(5, max(0, ((playerInfo.score - curSubLevel.blind.value) / curSubLevel.blind.value) * 5))
 
-
-
     def updateCards(self, posX, posY, cardsDict, cardsList, scale=1.5, spacing=90, baseYOffset=-20, leftShift=40):
         cardsDict.clear()
         for i, card in enumerate(cardsList):
