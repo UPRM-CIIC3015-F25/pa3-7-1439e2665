@@ -1,5 +1,8 @@
 import pygame
 import random
+
+from aiohttp.helpers import calculate_timeout_when
+
 from States.Menus.DebugState import DebugState
 from States.Core.StateClass import State
 from Cards.Card import Suit, Rank
@@ -558,7 +561,18 @@ class GameState(State):
     #     - A clear base case to stop recursion when all parts are done
     #   Avoid any for/while loops — recursion alone must handle the repetition.
     def calculate_gold_reward(self, playerInfo, stage=0):
-            return 0
+        curSubLevel = playerInfo.levelManager.curSubLevel
+        if stage == 0:
+            if curSubLevel.blind.name == "SMALL":
+                return 4 + self.calculate_gold_reward(playerInfo, stage + 1)
+            if curSubLevel.blind.name == "BIG":
+                return 8 + self.calculate_gold_reward(playerInfo, stage + 1)
+            else:
+                return 10 + self.calculate_gold_reward(playerInfo, stage + 1)
+        else:
+            return min(5, max(0, ((playerInfo.score - curSubLevel.blind.value) / curSubLevel.blind.value) * 5))
+
+
 
     def updateCards(self, posX, posY, cardsDict, cardsList, scale=1.5, spacing=90, baseYOffset=-20, leftShift=40):
         cardsDict.clear()
