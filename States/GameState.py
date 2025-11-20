@@ -872,9 +872,9 @@ class GameState(State):
             self.activated_jokers.add("Micheal Myers")
 
         if "Fibonacci" in owned:
-            for hand in used_cards:
-                if "Ace" in hand or "2" in hand or "3" in hand or "5" in hand or "8" in hand:
-                    hand_mult += 8
+            # I need to fix this
+            # if "Ace" in hand or "2" in hand or "3" in hand or "5" in hand or "8" in hand:
+            #     hand_mult += 8
             self.activated_jokers.add("Fibonacci")
 
         if "Gauntlet" in owned:
