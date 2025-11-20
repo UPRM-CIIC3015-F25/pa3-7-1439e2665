@@ -1,6 +1,6 @@
 import pygame
 
-from States.Core.SettingsState import SettingsState
+from States.Menus.SettingsState import SettingsState
 from States.Core.StateClass import State
 from States.Menus.TitleState import StartState
 from States.GameState import GameState
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     pygame.mixer.music.set_volume(0.3)
     pygame.mixer.music.play(-1)
     State.set_screen(screen)
-    
+
     # --- Initial States ---
     settingsScreen = SettingsState()
     startScreen = StartState()
@@ -64,8 +64,8 @@ if __name__ == "__main__":
                 curScreen = RunInfoState(curScreen.playedHandNameList)
             elif curScreen.nextState == "SettingsState":
                 curScreen.isFinished = False
-                settingsScreen.nextState = curScreen  # tell settings where to return
-                curScreen = settingsScreen  # switch to the SAME settings object
+                settingsScreen.returnState = curScreen.__class__.__name__  # store name only
+                curScreen = settingsScreen
             elif curScreen.nextState == "ShopState":
                 curScreen.isFinished = False
                 curScreen = ShopState(game_state=curScreen)
@@ -77,4 +77,3 @@ if __name__ == "__main__":
 
         curScreen.update()
         pygame.display.update()
-         

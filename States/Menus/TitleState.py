@@ -43,6 +43,7 @@ class StartState(State):
         self.textFont2 = pygame.font.Font('Graphics/Text/m6x11.ttf', 40)
         self.textPlay = self.textFont1.render("PLAY", True, 'white')
         self.textInstructions = self.textFont2.render("HELP", True, 'white')
+        self.textSettings = self.textFont2.render("SETTINGS", True, 'white')
         self.textQuit = self.textFont1.render("QUIT", True, 'white')
 
         # ----------------------------- Title Card --------------------------------
@@ -54,20 +55,24 @@ class StartState(State):
         self.isMouseInCard = False
 
         # ----------------------------- button Bar --------------------------------
-        self.buttonBar = pygame.Rect(self.titleRect.x, 540, 690, 120)
-        self.buttonBarSurface = pygame.Surface((690, 120), pygame.SRCALPHA)
+        bar_width = 800
+        self.buttonBar = pygame.Rect(self.titleRect.x - (bar_width - 690) // 2, 540, bar_width, 120)
+        self.buttonBarSurface = pygame.Surface((bar_width, 120), pygame.SRCALPHA)
 
         # Buttons
         self.buttonPlay = pygame.Rect(0, 0, 190, 75)
         self.buttonInstructions = pygame.Rect(0, 0, 180, 50)
+        self.buttonSettings = pygame.Rect(0, 0, 180, 50)
         self.buttonQuit = pygame.Rect(0, 0, 200, 75)
 
-        total_width = self.buttonPlay.width + self.buttonInstructions.width + self.buttonQuit.width
-        spacing = (self.buttonBar.width - total_width) // 4  # even spacing
+        total_width = self.buttonPlay.width + self.buttonInstructions.width + self.buttonSettings.width + self.buttonQuit.width
+        spacing = (self.buttonBar.width - total_width) // 5  # even spacing
 
         x = spacing
         self.buttonPlay.topleft = (x, (self.buttonBar.height - self.buttonPlay.height) // 2)
         x += self.buttonPlay.width + spacing
+        self.buttonSettings.topleft = (x, (self.buttonBar.height - self.buttonSettings.height) // 2)
+        x += self.buttonSettings.width + spacing
         self.buttonInstructions.topleft = (x, (self.buttonBar.height - self.buttonInstructions.height) // 2)
         x += self.buttonInstructions.width + spacing
         self.buttonQuit.topleft = (x, (self.buttonBar.height - self.buttonQuit.height) // 2)
@@ -156,10 +161,12 @@ class StartState(State):
             self.buttonBarSurface.blit(text_surface, text_rect)
 
         play_base, play_hover = (30, 144, 255), (0, 191, 255)
-        instruct_base, instruct_hover = (255, 140, 0), (255, 165, 0)
+        settings_base, settings_hover = (255, 140, 0), (255, 165, 0)
+        instruct_base, instruct_hover = (30, 255, 33), (100, 255, 33)
         quit_base, quit_hover = (178, 34, 34), (255, 69, 58)
 
         draw_button(self.buttonPlay, play_base, play_hover, self.textPlay)
+        draw_button(self.buttonSettings, settings_base, settings_hover, self.textSettings)
         draw_button(self.buttonInstructions, instruct_base, instruct_hover, self.textInstructions)
         draw_button(self.buttonQuit, quit_base, quit_hover, self.textQuit)
 
@@ -179,10 +186,13 @@ class StartState(State):
 
         if events.type == pygame.QUIT:
             self.isFinished = True
+            self.nextState = None
+
         if events.type == pygame.KEYDOWN and events.key == pygame.K_ESCAPE:
             self.isFinished = True
+            self.nextState = None
 
-        # Mouse events
+                    # Mouse events
         if events.type == pygame.MOUSEBUTTONDOWN:
             if self.showHelpScreen:
                 self.showHelpScreen = False  # close help overlay on click
@@ -198,6 +208,11 @@ class StartState(State):
             elif self.buttonInstructions.collidepoint(mousePosbuttonBar):
                 self.buttonSound.play()
                 self.showHelpScreen = True  # show help overlay
+            elif self.buttonSettings.collidepoint(mousePosbuttonBar):
+                State.screenshot = self.screen.copy()
+                self.buttonSound.play()
+                self.isFinished = True
+                self.nextState = "SettingsState"
 
         elif events.type == pygame.MOUSEBUTTONUP:
             self.mouseDragging = False

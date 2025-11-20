@@ -46,7 +46,7 @@ class SettingsState(State):
         toggleTextRect = toggleText.get_rect(center=self.toggleRect.center)
         self.menuSurface.blit(toggleText, toggleTextRect)
 
-        pygame.draw.rect(self.menuSurface, (80, 80, 80), self.backRect)
+        pygame.draw.rect(self.menuSurface, (255, 140, 0), self.backRect)
         backText = self.font.render("Back", True, textColor)
         backTextRect = backText.get_rect(center=self.backRect.center)
         self.menuSurface.blit(backText, backTextRect)
@@ -59,7 +59,11 @@ class SettingsState(State):
     def userInput(self, events):
         if events.type == pygame.QUIT:
             self.isFinished = True
-            self.nextState = "GameState"
+            self.nextState = self.returnState
+
+        if events.type == pygame.KEYDOWN and events.key == pygame.K_ESCAPE:
+            self.isFinished = True
+            self.nextState = self.returnState
 
         elif events.type == pygame.MOUSEBUTTONDOWN:
             # Toggle high contrast
@@ -69,4 +73,5 @@ class SettingsState(State):
             # Go back
             elif self.backRect.collidepoint(events.pos[0] - 450, events.pos[1] - 250):
                 self.isFinished = True
-                self.nextState = "GameState"
+                self.nextState = self.returnState
+
