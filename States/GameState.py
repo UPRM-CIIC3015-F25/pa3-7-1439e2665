@@ -1,3 +1,5 @@
+from itertools import count
+
 import pygame
 import random
 from States.Menus.DebugState import DebugState
@@ -861,43 +863,56 @@ class GameState(State):
         #   The last line ensures the Joker is visibly active and its effects are properly applied.
 
         if "The Joker" in owned:
-            # apply things eventually
+            hand_mult += 4
             self.activated_jokers.add("The Joker")
 
         if "Michael Myers" in owned:
-            #
+            rando = random.randrange(0,23)
+            hand_mult += rando
             self.activated_jokers.add("Micheal Myers")
 
         if "Fibonacci" in owned:
-            #
+            for hand in used_cards:
+                if "Ace" in hand or "2" in hand or "3" in hand or "5" in hand or "8" in hand:
+                    hand_mult += 8
             self.activated_jokers.add("Fibonacci")
 
         if "Gauntlet" in owned:
-            #
+            total_chips += 250
+            # Need to figure this out -2 hand
             self.activated_jokers.add("Gauntlet")
 
         if "StrawHat" in owned:
-            #
+            count = 100
+            total_chips += count
+            while count >= 0:
+                count -= 5
+
             self.activated_jokers.add("StrawHat")
 
         if "Hog Rider" in owned:
-            #
+            if hand_name == "Straight":
+                total_chips += 100
             self.activated_jokers.add("Hog Rider")
 
         if "? Block" in owned:
-            #
+            if used_cards == 4:
+                total_chips += 4
             self.activated_jokers.add("? Block")
 
         if "Hogwarts" in owned:
-            #
+            for hand in used_cards:
+                if "Ace" in hand:
+                    hand_mult += 4
+                    total_chips += 20
             self.activated_jokers.add("Hogwarts")
 
         if "Ogre" in owned:
-            #
+            hand_mult += (len(owned)*3)
             self.activated_jokers.add("Ogre")
 
         if "802" in owned:
-            #
+            # No idea how to get this one variable
             self.activated_jokers.add("802")
 
         procrastinate = False
