@@ -7,6 +7,7 @@ from Levels.SubLevel import SubLevel
 class DeckManager:
     def __init__(self):
         self.resetDeck = False
+        self.useHighContrast = False
         self.srcCardW, self.srcCardH = 70, 94  # Poker Cards source dimensions
         self.srcJokerW, self.srcJokerH = 133, 187 # Joker sheet dimensions
         self.targetJokerH = 150 # Unified Joker display height
@@ -57,14 +58,16 @@ class DeckManager:
         return pix.subsurface(rect).copy()
 
     # ---------- Loading ----------
-    def load_card_images(self, subLevel: SubLevel = None):
+    def load_card_images(self, subLevel: SubLevel = None,alt = False):
         """
         Load 52 card faces at their original resolution (70x94),
         optionally applying 'The Mark' modifications if the boss requires it.
         """
         sheet = pygame.image.load('Graphics/Cards/Poker_Sprites.png').convert_alpha()
+        highSheet=pygame.image.load('Graphics/Cards/Poker_Sprite_HighContrast.png').convert_alpha()
 
         cardImages = {}
+        cardHighContrastImages = {}
         useMark = False
 
         if subLevel is not None:
@@ -72,6 +75,7 @@ class DeckManager:
             if bossName == "The Mark":
                 useMark = True
                 markFace = sheet.subsurface(pygame.Rect(0, 0, self.srcCardW, self.srcCardH)).copy()
+                hc_markFace = highSheet.subsurface(pygame.Rect(0, 0, self.srcCardW, self.srcCardH)).copy()
 
         suits = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES]
 
@@ -90,6 +94,13 @@ class DeckManager:
 
                 cardImages[(suit, rank)] = cell
 
+                hc_cell = highSheet.subsurface(pygame.Rect(x, y, self.srcCardW, self.srcCardH)).copy()
+                if useMark and rank in (Rank.JACK, Rank.QUEEN, Rank.KING):
+                    # replace with high-contrast "Mark" face
+                    hc_cell = hc_markFace.copy()
+                cardHighContrastImages[(suit, rank)] = hc_cell
+        if alt == True:
+            return cardHighContrastImages
         return cardImages
 
     def loadJokerImages(self):
@@ -145,9 +156,12 @@ class DeckManager:
     #   Add each created Card to a list called 'deck' and return the completed list at the end.
     def createDeck(self, subLevel: SubLevel = None):
         deck = []
+        #BONUS: Added HC (High Contrast) cards
         cardImages = self.load_card_images(subLevel)
-        for card,image in cardImages.items():
-            deck.append(Card(suit=card[0], rank=card[1], image=image))
+        hcImages = self.load_card_images(subLevel, True)
+
+        for card, image in cardImages.items():
+            deck.append(Card(suit=card[0], rank=card[1], image=image, altimage=hcImages[(card[0], card[1])]))
         return deck
 
     # TODO (TASK 5.1): Complete the priceMap variable by assigning each joker a price.

@@ -1,8 +1,5 @@
 import pygame
 import random
-
-from aiohttp.helpers import calculate_timeout_when
-
 from States.Menus.DebugState import DebugState
 from States.Core.StateClass import State
 from Cards.Card import Suit, Rank
@@ -24,14 +21,15 @@ HAND_SCORES = {
 }
 
 class GameState(State):
-    def __init__(self, nextState: str = "", player: PlayerInfo = None):
+    def __init__(self,settingsstate, nextState: str = "", player: PlayerInfo = None):
         super().__init__(nextState)
         # ----------------------------Deck and Hand initialization----------------------------
         self.playerInfo = player # playerInfo object
         self.deck = State.deckManager.shuffleDeck(State.deckManager.createDeck(self.playerInfo.levelManager.curSubLevel))
         self.hand = State.deckManager.dealCards(self.deck, 8)
         self.cards = {}
-        
+        self.settingsstate = settingsstate
+
         self.jokerDeck = State.deckManager.createJokerDeck()
         self.playerJokers = []
         self.jokers = {}
@@ -299,21 +297,45 @@ class GameState(State):
         self.screen.blit(deckContainer, self.deckContainer.topleft)
 
     def drawCardsInHand(self):
-        for card in self.cards:
+        for card, rect in self.cards.items():
+            # Skip selected cards if playing hand
             if self.playHandActive and card in self.cardsSelectedList:
                 continue
-            img_to_draw = getattr(card, "scaled_image", card.image)
-            State.screen.blit(img_to_draw, self.cards[card])
+
+            # --- Use high contrast image if flag is True ---
+            if self.settingsstate.highContrast and card.altImage:
+                img_to_draw = getattr(card, "scaled_image_alt", None)
+                if img_to_draw is None:
+                    img_to_draw = pygame.transform.scale(card.altImage, (int(card.altImage.get_width() * 1.2),
+                                                                         int(card.altImage.get_height() * 1.2)))
+                    card.scaled_image_alt = img_to_draw
+            else:
+                img_to_draw = getattr(card, "scaled_image", None)
+                if img_to_draw is None:
+                    img_to_draw = pygame.transform.scale(card.image, (int(card.image.get_width() * 1.2),
+                                                                      int(card.image.get_height() * 1.2)))
+                    card.scaled_image = img_to_draw
+
+            State.screen.blit(img_to_draw, rect)
         self.drawCardTooltip()
 
     def drawCenterCards(self):
-        self.centerCardsSurface.fill((0, 0, 0, 0))  # Clear surface
+        self.centerCardsSurface.fill((0, 0, 0, 0))
+        for card, rect in self.cardsSelectedRect.items():
+            if self.settingsstate.highContrast and card.altImage:
+                img_to_draw = getattr(card, "scaled_image_alt", None)
+                if img_to_draw is None:
+                    img_to_draw = pygame.transform.scale(card.altImage, (int(card.altImage.get_width() * 1.2),
+                                                                         int(card.altImage.get_height() * 1.2)))
+                    card.scaled_image_alt = img_to_draw
+            else:
+                img_to_draw = getattr(card, "scaled_image", None)
+                if img_to_draw is None:
+                    img_to_draw = pygame.transform.scale(card.image, (int(card.image.get_width() * 1.2),
+                                                                      int(card.image.get_height() * 1.2)))
+                    card.scaled_image = img_to_draw
 
-        if len(self.cardsSelectedRect) > 0:
-            for card, rect in self.cardsSelectedRect.items():
-                img_to_draw = getattr(card, "scaled_image", card.image)
-                self.centerCardsSurface.blit(img_to_draw, rect)
-
+            self.centerCardsSurface.blit(img_to_draw, rect)
         self.screen.blit(self.centerCardsSurface, self.centerCardsRect)
 
     def drawPlayedHandName(self):
@@ -441,7 +463,10 @@ class GameState(State):
             overlay = pygame.Surface((1300, 750), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
             self.screen.blit(overlay, (0, 0))
-            card_images = State.deckManager.load_card_images(self.playerInfo.levelManager.next_unfinished_sublevel())
+            if self.settingsstate.highContrast:
+                card_images = State.deckManager.load_card_images(self.playerInfo.levelManager.next_unfinished_sublevel(), True)
+            else:
+                card_images = State.deckManager.load_card_images(self.playerInfo.levelManager.next_unfinished_sublevel())
             suits = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES]
             ranks = [Rank.ACE, Rank.TWO, Rank.THREE, Rank.FOUR, Rank.FIVE, Rank.SIX, Rank.SEVEN,
                      Rank.EIGHT, Rank.NINE, Rank.TEN, Rank.JACK, Rank.QUEEN, Rank.KING]
@@ -515,6 +540,13 @@ class GameState(State):
                 State.screenshot = self.screen.copy()
                 self.isFinished = True
                 self.nextState = "RunInfoState"
+
+
+            if self.playerInfo.instrRect.collidepoint(
+                    (mousePos[0] - self.playerInfo.playerInfo2.x, mousePos[1] - self.playerInfo.playerInfo2.y)):
+                State.screenshot = self.screen.copy()
+                self.isFinished = True
+                self.nextState = "SettingsState"
 
             # Joker click info
             for joker_obj, joker_rect in self.jokers.items():

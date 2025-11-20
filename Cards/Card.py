@@ -22,10 +22,11 @@ class Rank(Enum): # Enumeration for the thirteen card ranks
     ACE = 14
 
 class Card:
-    def __init__(self, suit: Suit, rank: Rank, image=None): # Represents a single playing card with suit, rank, and optional image
+    def __init__(self, suit: Suit, rank: Rank, image=None,altimage=None): # Represents a single playing card with suit, rank, and optional image
         self.suit = suit
         self.rank = rank
         self.image = image
+        self.altImage = altimage
         self.faceDown = False
         self.isSelected = False
 

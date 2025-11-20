@@ -39,6 +39,7 @@ class PlayerInfo(State):
 
         # -------------------------------Text Fonts-------------------------------------------
         self.textFont1 = pygame.font.Font('Graphics/Text/m6x11.ttf', 30)
+        self.textFontSettings = pygame.font.Font('Graphics/Text/m6x11.ttf', 24)
         self.textFont2 = pygame.font.Font('Graphics/Text/m6x11.ttf', 22)
         self.textFont3 = pygame.font.Font('Graphics/Text/m6x11.ttf', 60)
         self.textFont4 = pygame.font.Font('Graphics/Text/m6x11.ttf', 25)
@@ -54,7 +55,7 @@ class PlayerInfo(State):
         self.xText = self.textFont3.render('X', False, (180, 30, 30))
         self.runText = self.textFont1.render('Run', False, 'white')
         self.infoText = self.textFont1.render('Info', False, 'white')
-        self.instrText = self.textFont1.render('Help', False, 'white')
+        self.instrText = self.textFontSettings.render('Settings', False, 'white')
         self.handText = self.textFont1.render('Hands', False, 'white')
         self.discardText = self.textFont4.render('Discards', False, 'white')
         self.anteText = self.textFont1.render("Ante", False, "white")
@@ -306,7 +307,6 @@ class PlayerInfo(State):
         self.playerInfo2Surface.blit(self.runText, self.runTextRect)
         self.playerInfo2Surface.blit(self.infoText, self.infoTextRect)
         self.playerInfo2Surface.blit(self.instrText, self.instrTextRect)
-        self.playerInfo2Surface.blit(self.playerInfo2Surface, self.playerInfo2)
 
         self.leftRectSurface.blit(self.roundText, pygame.Rect(30, 230, 20, 20))
         self.leftRectSurface.blit(self.scoreText, pygame.Rect(30, 250, 20, 20))
@@ -332,4 +332,7 @@ class PlayerInfo(State):
                 self.isFinished = True
                 self.nextState = "RunInfoState"
             if self.instrRect.collidepoint(mousePosPlayerInfo2):
+                print("Clicked the Settings!\n")
+                self.isFinished = True
+                self.nextState = "SettingsState"
                 self.buttonSound.play()

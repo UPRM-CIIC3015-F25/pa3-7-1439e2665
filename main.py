@@ -1,4 +1,6 @@
 import pygame
+
+from States.Core.SettingsState import SettingsState
 from States.Core.StateClass import State
 from States.Menus.TitleState import StartState
 from States.GameState import GameState
@@ -20,9 +22,10 @@ if __name__ == "__main__":
     State.set_screen(screen)
     
     # --- Initial States ---
+    settingsScreen = SettingsState()
     startScreen = StartState()
     player = PlayerInfo()
-    gameScreen = GameState(player=player)
+    gameScreen = GameState(settingsScreen,player=player)
     curScreen = startScreen
 
     # --- Main loop ---
@@ -41,7 +44,7 @@ if __name__ == "__main__":
                 # U guys can google what isinstance does :)
                 if isinstance(curScreen, GameWinState):
                     player = PlayerInfo()
-                    gameScreen = GameState(player=player)
+                    gameScreen = GameState(settingsScreen,player=player)
                     curScreen.isFinished = False
                     curScreen.nextState = ""
                     curScreen = gameScreen
@@ -59,6 +62,10 @@ if __name__ == "__main__":
             elif curScreen.nextState == "RunInfoState":
                 curScreen.isFinished = False
                 curScreen = RunInfoState(curScreen.playedHandNameList)
+            elif curScreen.nextState == "SettingsState":
+                curScreen.isFinished = False
+                settingsScreen.nextState = curScreen  # tell settings where to return
+                curScreen = settingsScreen  # switch to the SAME settings object
             elif curScreen.nextState == "ShopState":
                 curScreen.isFinished = False
                 curScreen = ShopState(game_state=curScreen)
