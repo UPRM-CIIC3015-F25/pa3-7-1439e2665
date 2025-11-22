@@ -228,7 +228,7 @@ class GameState(State):
         # Check if level is finished and transition to LevelSelectState
         if self.playerInfo.levelFinished:
             reward = self.calculate_gold_reward(self.playerInfo)
-            if deck_type != "Gold":
+            if self.deck_type != "Gold":
                 self.playerInfo.apply_deck_type()
             else:
                 self.playerInfo.playerMoney += reward
