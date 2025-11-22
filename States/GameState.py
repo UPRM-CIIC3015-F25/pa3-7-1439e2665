@@ -2,9 +2,10 @@ from itertools import count
 
 import pygame
 import random
+from States.Core.SaveClass import GameSaver
 from States.Menus.DebugState import DebugState
 from States.Core.StateClass import State
-from Cards.Card import Suit, Rank
+from Cards.Card import Card, Suit, Rank
 from States.Core.PlayerInfo import PlayerInfo
 from Deck.HandEvaluator import evaluate_hand
 import cv2
@@ -45,6 +46,24 @@ class GameState(State):
         self.cardsSelectedRect = {}
         self.playedHandNameList = ['']
         self.used = []
+        self.saver = GameSaver()
+
+        try:
+            # Load game state using deck manager
+            player_info_data, hand_data, deck_data, jokers_data = self.saver.load_game(State.deckManager)
+
+            # Restore PlayerInfo attributes
+            for key, value in player_info_data.items():
+                setattr(self.playerInfo, key, value)
+
+            self.hand = hand_data
+            self.deck = deck_data
+            self.activated_jokers = set(jokers_data)
+
+        except FileNotFoundError:
+            print("[GameSaver] No save file found. Starting new game.")
+        except Exception as e:
+            print(f"[GameSaver] Error loading save: {e}. Starting new game.")
 
         self.redTint = pygame.image.load("Graphics/Backgrounds/redTint.png").convert_alpha()
         self.redTint = pygame.transform.scale(self.redTint, (1300, 750))
@@ -510,6 +529,12 @@ class GameState(State):
         # Escape key to quit
         if events.type == pygame.KEYDOWN:
             if events.key == pygame.K_ESCAPE:
+                self.saver.save_game(
+                    player_info_obj=self.playerInfo,  # Pass the PlayerInfo instance
+                    hand=self.hand,
+                    deck=self.deck,
+                    activated_jokers=self.activated_jokers
+                )
                 self.isFinished = True
                 self.nextState = "StartState"
 

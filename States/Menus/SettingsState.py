@@ -1,8 +1,12 @@
 import pygame
+import json as json
 from States.Core.StateClass import State
 
 
 class SettingsState(State):
+
+    SETTINGS_FILE = "settings.json"
+
     def __init__(self, nextState=None):
         super().__init__(nextState)
         self.returnState = nextState
@@ -19,6 +23,7 @@ class SettingsState(State):
 
         # High Contrast Card toggle
         self.highContrast = False  # default
+        self.load_settings()
         self.toggleRect = pygame.Rect(100, 80, 200, 50)  # rectangle for toggle button
 
         # Back button
@@ -33,7 +38,7 @@ class SettingsState(State):
 
 
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 120))  # adjust alpha for more/less transparency
+        overlay.fill((0, 0, 0, 120))
         self.screen.blit(overlay, (0, 0))
 
         menuColor = (50, 50, 50, 200)  # you already use SRCALPHA
@@ -51,9 +56,27 @@ class SettingsState(State):
         backTextRect = backText.get_rect(center=self.backRect.center)
         self.menuSurface.blit(backText, backTextRect)
 
-        self.screen.blit(self.menuSurface, (450, 250)) # center-ish
+        self.screen.blit(self.menuSurface, (450, 250))
         self.screen.blit(self.tvOverlay, (0, 0))
 
+    def save_settings(self):
+        try:
+            with open(self.SETTINGS_FILE, "w") as f:
+                json.dump({"highContrast": self.highContrast}, f, indent=4)
+            print(f"[SettingsState] Settings saved to {self.SETTINGS_FILE}")
+        except Exception as e:
+            print(f"[SettingsState] Error saving settings: {e}")
+
+    def load_settings(self):
+        try:
+            with open(self.SETTINGS_FILE, "r") as f:
+                data = json.load(f)
+                self.highContrast = data.get("highContrast", False)
+            print(f"[SettingsState] Settings loaded from {self.SETTINGS_FILE}")
+        except FileNotFoundError:
+            print(f"[SettingsState] No settings file found, using defaults")
+        except Exception as e:
+            print(f"[SettingsState] Error loading settings: {e}")
 
 
     def userInput(self, events):
@@ -66,9 +89,9 @@ class SettingsState(State):
             self.nextState = self.returnState
 
         elif events.type == pygame.MOUSEBUTTONDOWN:
-            # Toggle high contrast
             if self.toggleRect.collidepoint(events.pos[0] - 450, events.pos[1] - 250):
                 self.highContrast = not self.highContrast
+                self.save_settings()  # immediately save changes
 
             # Go back
             elif self.backRect.collidepoint(events.pos[0] - 450, events.pos[1] - 250):

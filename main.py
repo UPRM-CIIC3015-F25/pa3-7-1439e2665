@@ -48,6 +48,13 @@ if __name__ == "__main__":
                     curScreen.isFinished = False
                     curScreen.nextState = ""
                     curScreen = gameScreen
+                elif hasattr(curScreen, 'newGameFlag') and curScreen.newGameFlag:
+                    player = PlayerInfo()  # reset player info
+                    gameScreen = GameState(settingsScreen, player=player)
+                    curScreen.newGameFlag = False
+                    curScreen.isFinished = False
+                    curScreen.nextState = ""
+                    curScreen = gameScreen
                 else:
                     # Otherwise, just continue with existing player/game instances
                     curScreen.isFinished = False

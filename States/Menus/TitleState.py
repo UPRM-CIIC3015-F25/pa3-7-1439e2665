@@ -3,6 +3,8 @@ from States.Core.StateClass import State
 import math
 from moviepy import VideoFileClip, vfx
 import sys
+import os
+
 
 class StartState(State):
     def __init__(self, nextState: str = ""):
@@ -94,6 +96,26 @@ class StartState(State):
             "5. Have fun and enjoy the game!"
         ]
 
+        # Overlay state
+        # Buttons for overlay
+        # in __init__
+        self.showPlayOverlay = False
+        self.overlaySurface = pygame.Surface((400, 200), pygame.SRCALPHA)
+        self.overlaySurface.fill((50, 50, 50, 200))
+
+        # Overlay buttons
+        self.buttonNewGame = pygame.Rect(50, 50, 120, 50)
+        self.buttonLoadGame = pygame.Rect(230, 50, 120, 50)
+
+        # Text
+        self.textFontOverlay = pygame.font.Font('Graphics/Text/m6x11.ttf', 30)
+        self.textNewGame = self.textFontOverlay.render("NEW GAME", True, 'white')
+        self.textLoadGame = self.textFontOverlay.render("LOAD GAME", True, 'white')
+
+    def has_save_file(self):
+        save_file = "settings.json"  # or whatever your save filename is
+        return os.path.isfile(save_file) and os.path.getsize(save_file) > 0
+
     # ----------------------------- Update ------------------------------------
     def update(self):
         try:
@@ -131,6 +153,22 @@ class StartState(State):
         # Draw Help Screen Overlay if active
         if self.showHelpScreen:
             self.drawHelpScreen()
+
+        if self.showPlayOverlay:
+            overlayRect = self.overlaySurface.get_rect(center=(650, 375))
+            State.screen.blit(self.overlaySurface, overlayRect)
+
+            # New Game button
+            pygame.draw.rect(State.screen, (0, 200, 0), self.buttonNewGame.move(overlayRect.topleft))
+            State.screen.blit(self.textNewGame,
+                              self.textNewGame.get_rect(center=self.buttonNewGame.move(overlayRect.topleft).center))
+
+            # Load Game button
+            load_enabled = self.has_save_file()
+            color = (0, 0, 200) if load_enabled else (100, 100, 100)
+            pygame.draw.rect(State.screen, color, self.buttonLoadGame.move(overlayRect.topleft))
+            State.screen.blit(self.textLoadGame,
+                              self.textLoadGame.get_rect(center=self.buttonLoadGame.move(overlayRect.topleft).center))
 
     # ----------------------------- Help Screen --------------------------------
     def drawHelpScreen(self):
@@ -194,17 +232,37 @@ class StartState(State):
 
                     # Mouse events
         if events.type == pygame.MOUSEBUTTONDOWN:
-            if self.showHelpScreen:
+            if self.showPlayOverlay:
+                overlayRect = self.overlaySurface.get_rect(center=(650, 375))
+                mousePosOverlay = (events.pos[0] - overlayRect.x, events.pos[1] - overlayRect.y)
+
+                if self.buttonNewGame.collidepoint(mousePosOverlay):
+                    self.buttonSound.play()
+                    self.showPlayOverlay = False
+                    self.isFinished = True
+                    self.nextState = "GameState"
+                    # Delete save file
+                    save_file = "savegame.json"
+                    if os.path.isfile(save_file):
+                        os.remove(save_file)
+
+                elif self.buttonLoadGame.collidepoint(mousePosOverlay) and self.has_save_file():
+                    self.buttonSound.play()
+                    self.showPlayOverlay = False
+                    self.isFinished = True
+                    self.nextState = "GameState"
+
+            elif self.showHelpScreen:
                 self.showHelpScreen = False  # close help overlay on click
             elif self.isMouseInCard:
                 self.mouseDragging = True
             elif self.buttonQuit.collidepoint(mousePosbuttonBar):
                 self.buttonSound.play()
                 self.isFinished = True
+                self.nextState = None
             elif self.buttonPlay.collidepoint(mousePosbuttonBar):
                 self.buttonSound.play()
-                self.isFinished = True
-                self.nextState = "GameState"
+                self.showPlayOverlay = True
             elif self.buttonInstructions.collidepoint(mousePosbuttonBar):
                 self.buttonSound.play()
                 self.showHelpScreen = True  # show help overlay

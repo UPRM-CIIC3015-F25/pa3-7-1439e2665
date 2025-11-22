@@ -39,3 +39,19 @@ class Card:
 
     def __str__(self): # Formated string of the card (Example: Ace♠)
         return f"{self.rank.name.capitalize()}{self.suit.value}"
+
+    def save_card(self):
+        return {
+            "suit": self.suit.name,
+            "rank": self.rank.name,
+            "chips": self.chips,
+            "faceDown": self.faceDown
+        }
+
+    @staticmethod
+    def load_card(data):
+        card = Card(Suit[data["suit"]], Rank[data["rank"]])
+        card.chips = data.get("chips", card.chips)
+        card.faceDown = data.get("faceDown", False)
+        card.isSelected = data.get("isSelected", False)
+        return card
