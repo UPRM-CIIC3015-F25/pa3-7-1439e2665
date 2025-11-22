@@ -879,7 +879,9 @@ class GameState(State):
 
         if "Gauntlet" in owned:
             total_chips += 250
-            # Need to figure this out -2 hand
+            if self.playerInfo.amountOfHands == 3:
+                self.playerInfo.amountOfHands -= 2
+                # Idk how to man
             self.activated_jokers.add("Gauntlet")
 
         if "StrawHat" in owned:
@@ -903,8 +905,8 @@ class GameState(State):
         if "Hogwarts" in owned:
             for hand in used_cards:
                 if "ACE" == hand.rank.name:
-                    hand_mult += 8
-                    break
+                    hand_mult += 4
+                    total_chips += 20
         self.activated_jokers.add("Hogwarts")
 
         if "Ogre" in owned:
@@ -912,7 +914,9 @@ class GameState(State):
             self.activated_jokers.add("Ogre")
 
         if "802" in owned:
-            # No idea how to get this one variable
+            if self.playerInfo.amountOfHands == 0:
+                total_chips *= 2
+                hand_mult *= 2
             self.activated_jokers.add("802")
 
         procrastinate = False
