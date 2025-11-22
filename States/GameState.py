@@ -24,7 +24,7 @@ HAND_SCORES = {
 }
 
 class GameState(State):
-    def __init__(self,settingsstate, nextState: str = "", player: PlayerInfo = None):
+    def __init__(self,settingsstate, nextState: str = "", player: PlayerInfo = None, forceNew=False):
         super().__init__(nextState)
         # ----------------------------Deck and Hand initialization----------------------------
         self.playerInfo = player # playerInfo object
@@ -48,22 +48,37 @@ class GameState(State):
         self.used = []
         self.saver = GameSaver()
 
-        try:
-            # Load game state using deck manager
-            player_info_data, hand_data, deck_data, jokers_data = self.saver.load_game(State.deckManager)
+        if not forceNew:
+            try:
+                # Load game state using deck manager
+                player_info_data, hand_data, deck_data, jokers_data = self.saver.load_game(State.deckManager)
 
-            # Restore PlayerInfo attributes
-            for key, value in player_info_data.items():
-                setattr(self.playerInfo, key, value)
+                # Restore PlayerInfo attributes
+                for key, value in player_info_data.items():
+                    setattr(self.playerInfo, key, value)
 
-            self.hand = hand_data
-            self.deck = deck_data
-            self.activated_jokers = set(jokers_data)
+                self.hand = hand_data
+                self.deck = deck_data
+                self.activated_jokers = set(jokers_data)
 
-        except FileNotFoundError:
-            print("[GameSaver] No save file found. Starting new game.")
-        except Exception as e:
-            print(f"[GameSaver] Error loading save: {e}. Starting new game.")
+            except FileNotFoundError:
+                print("[GameSaver] No save file found. Starting new game.")
+            except Exception as e:
+                print(f"[GameSaver] Error loading save: {e}. Starting new game.")
+                self.playerInfo.apply_deck_type()
+
+        else:
+            print("[GameState] Force new game - ignoring save file")
+            self.deck_type = getattr(State, "nextDeckType", "Normal")
+            self.playerInfo.deckType = self.deck_type
+
+            # Reset base stats before applying deck type
+            self.playerInfo.amountOfHands = 4
+            self.playerInfo.amountOfDiscards = 4
+            self.playerInfo.playerMoney = 0
+
+            # Apply deck type bonuses
+            self.playerInfo.apply_deck_type()
 
         self.redTint = pygame.image.load("Graphics/Backgrounds/redTint.png").convert_alpha()
         self.redTint = pygame.transform.scale(self.redTint, (1300, 750))
@@ -154,6 +169,7 @@ class GameState(State):
 
         # ------ Debug Overlay Setup -------
         self.debugState = DebugState(game_state=self)
+
         # ------------------------------------------------------------------------------------
 
     def _pretty_joker_description(self, joker_obj):
@@ -212,9 +228,12 @@ class GameState(State):
         # Check if level is finished and transition to LevelSelectState
         if self.playerInfo.levelFinished:
             reward = self.calculate_gold_reward(self.playerInfo)
-            self.playerInfo.playerMoney += reward
-            self.playerInfo.amountOfHands = 4
-            self.playerInfo.amountOfDiscards = 4
+            if deck_type != "Gold":
+                self.playerInfo.apply_deck_type()
+            else:
+                self.playerInfo.playerMoney += reward
+                self.playerInfo.amountOfHands = 4
+                self.playerInfo.amountOfDiscards = 4
             self.playerInfo.update()
             self.drawDeckPile()
             self.drawJokers()

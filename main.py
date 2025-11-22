@@ -42,16 +42,25 @@ if __name__ == "__main__":
             if curScreen.nextState == "GameState":
                 # If we come from GameWinState, recreate player/game instances
                 # U guys can google what isinstance does :)
+                deck_type = getattr(State, "nextDeckType", None)
                 if isinstance(curScreen, GameWinState):
                     player = PlayerInfo()
-                    gameScreen = GameState(settingsScreen,player=player)
+                    gameScreen = GameState(settingsScreen,player=player, forceNew=True)
                     curScreen.isFinished = False
                     curScreen.nextState = ""
                     curScreen = gameScreen
                 elif hasattr(curScreen, 'newGameFlag') and curScreen.newGameFlag:
                     player = PlayerInfo()  # reset player info
-                    gameScreen = GameState(settingsScreen, player=player)
+                    gameScreen = GameState(settingsScreen, player=player, forceNew=True)
                     curScreen.newGameFlag = False
+                    curScreen.isFinished = False
+                    curScreen.nextState = ""
+                    curScreen = gameScreen
+                elif deck_type:
+                    player = PlayerInfo()  # fresh player
+                    gameScreen = GameState(settingsScreen, player=player, forceNew=True)
+                    gameScreen.deckType = deck_type  # optional
+                    del State.nextDeckType  # clear flag
                     curScreen.isFinished = False
                     curScreen.nextState = ""
                     curScreen = gameScreen

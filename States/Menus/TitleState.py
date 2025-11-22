@@ -112,6 +112,22 @@ class StartState(State):
         self.textNewGame = self.textFontOverlay.render("NEW GAME", True, 'white')
         self.textLoadGame = self.textFontOverlay.render("LOAD GAME", True, 'white')
 
+        # Example: New Game Deck buttons
+        self.buttonNormalDeck = pygame.Rect(50, 50, 120, 50)
+        self.buttonBlueDeck = pygame.Rect(200, 50, 120, 50)
+        self.buttonRedDeck = pygame.Rect(350, 50, 120, 50)
+        self.buttonGoldDeck = pygame.Rect(500, 50, 120, 50)
+
+        self.deckOptions = ["Normal", "Blue", "Red", "Gold"]
+        self.selectedDeckIndex = 0  # default to Normal
+        self.deckCycleRect = pygame.Rect(270, 120, 50, 40)  # adjust position inside overlay
+
+        # Text surfaces
+        self.textNormalDeck = self.textFontOverlay.render("Normal", True, 'white')
+        self.textBlueDeck = self.textFontOverlay.render("Blue Deck", True, 'white')
+        self.textRedDeck = self.textFontOverlay.render("Red Deck", True, 'white')
+        self.textGoldDeck = self.textFontOverlay.render("Gold Deck (+$5)", True, 'white')
+
     def has_save_file(self):
         save_file = "settings.json"  # or whatever your save filename is
         return os.path.isfile(save_file) and os.path.getsize(save_file) > 0
@@ -169,6 +185,17 @@ class StartState(State):
             pygame.draw.rect(State.screen, color, self.buttonLoadGame.move(overlayRect.topleft))
             State.screen.blit(self.textLoadGame,
                               self.textLoadGame.get_rect(center=self.buttonLoadGame.move(overlayRect.topleft).center))
+
+            # Deck selector text
+            deckText = self.textFontOverlay.render(f"Deck: {self.deckOptions[self.selectedDeckIndex]}", True, 'white')
+            deckTextRect = deckText.get_rect(topleft=(50 + overlayRect.x, 120 + overlayRect.y))
+            State.screen.blit(deckText, deckTextRect)
+
+            # Cycle button
+            pygame.draw.rect(State.screen, (255, 140, 0), self.deckCycleRect.move(overlayRect.topleft))
+            arrowText = self.textFontOverlay.render(">", True, 'white')
+            arrowRect = arrowText.get_rect(center=self.deckCycleRect.move(overlayRect.topleft).center)
+            State.screen.blit(arrowText, arrowRect)
 
     # ----------------------------- Help Screen --------------------------------
     def drawHelpScreen(self):
@@ -236,21 +263,33 @@ class StartState(State):
                 overlayRect = self.overlaySurface.get_rect(center=(650, 375))
                 mousePosOverlay = (events.pos[0] - overlayRect.x, events.pos[1] - overlayRect.y)
 
+                # --------- NEW GAME ---------
                 if self.buttonNewGame.collidepoint(mousePosOverlay):
                     self.buttonSound.play()
                     self.showPlayOverlay = False
                     self.isFinished = True
                     self.nextState = "GameState"
-                    # Delete save file
+
+                    State.nextDeckType = self.deckOptions[self.selectedDeckIndex]
+
+                    # Delete old save file for new game
                     save_file = "savegame.json"
                     if os.path.isfile(save_file):
                         os.remove(save_file)
 
+                # --------- LOAD GAME ---------
                 elif self.buttonLoadGame.collidepoint(mousePosOverlay) and self.has_save_file():
                     self.buttonSound.play()
                     self.showPlayOverlay = False
                     self.isFinished = True
                     self.nextState = "GameState"
+
+                elif self.deckCycleRect.collidepoint(mousePosOverlay):
+                    self.buttonSound.play()
+                    # Cycle to the next deck
+                    self.selectedDeckIndex += 1
+                    if self.selectedDeckIndex >= len(self.deckOptions):
+                        self.selectedDeckIndex = 0
 
             elif self.showHelpScreen:
                 self.showHelpScreen = False  # close help overlay on click

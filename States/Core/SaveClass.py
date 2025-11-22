@@ -26,7 +26,8 @@ class GameSaver:
             "curHandOfPlayer": player_info_obj.curHandOfPlayer,
             "curAmountJoker": player_info_obj.curAmountJoker,
             "levelFinished": player_info_obj.levelFinished,
-            "score": player_info_obj.score
+            "score": player_info_obj.score,
+            "deckType": player_info_obj.deckType,
         }
 
         # Serialize cards

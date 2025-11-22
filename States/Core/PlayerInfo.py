@@ -8,6 +8,7 @@ class PlayerInfo(State):
     def __init__(self, nextState: str = ""):
         super().__init__(nextState)
         # ----------------------------Player Stats--------------------------------------------
+        self.deck_type = getattr(State, "nextDeckType", "Normal")
         self.roundScore = 0                 # Current round score (depending on curSubLevel)
         self.playerChips = 0                # Current chip count
         self.playerMultiplier = 0           # Current score multiplier
@@ -99,6 +100,25 @@ class PlayerInfo(State):
         self.smallBlindDirection = 1  # 1 = rotate right, -1 = rotate left
         self.smallBlindMaxAngle = 5  # Maximum rotation angle
         self.smallBlindSpeed = 0.15  # How fast it rotates
+
+    def apply_deck_type(self):
+        """Set base values depending on deck type."""
+        if self.deckType == "Blue":
+            self.amountOfHands = 4
+            self.amountOfDiscards = 5  # Blue adds 1 discard
+            self.playerMoney = 0
+        elif self.deckType == "Red":
+            self.amountOfHands = 5  # Red adds 1 hand
+            self.amountOfDiscards = 4
+            self.playerMoney = 0
+        elif self.deckType == "Gold":
+            self.amountOfHands = 4
+            self.amountOfDiscards = 4
+            self.playerMoney = 5  # Gold gives bonus money
+        else:  # Normal/default
+            self.amountOfHands = 4
+            self.amountOfDiscards = 4
+            self.playerMoney = 0
 
     def update(self):
         # Update smallBlind rotation
