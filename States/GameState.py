@@ -873,13 +873,16 @@ class GameState(State):
 
         if "Fibonacci" in owned:
             # I need to fix this
-            # if "Ace" in hand or "2" in hand or "3" in hand or "5" in hand or "8" in hand:
-            #     hand_mult += 8
+            # for hand in used_cards:
+            #     if "Ace" in hand or "2" in hand or "3" in hand or "5" in hand or "8" in hand:
+            #         hand_mult += 8
             self.activated_jokers.add("Fibonacci")
 
         if "Gauntlet" in owned:
             total_chips += 250
-            # Need to figure this out -2 hand
+            if self.playerInfo.amountOfHands == 3:
+                self.playerInfo.amountOfHands -= 2
+                # Idk how to man
             self.activated_jokers.add("Gauntlet")
 
         if "StrawHat" in owned:
@@ -901,10 +904,11 @@ class GameState(State):
             self.activated_jokers.add("? Block")
 
         if "Hogwarts" in owned:
-            for hand in used_cards:
-                if "Ace" in hand:
-                    hand_mult += 4
-                    total_chips += 20
+            # This one needs fix
+            # for hand in used_cards:
+            #     if hand in "Ace":
+            #         hand_mult += 4
+            #         total_chips += 20
             self.activated_jokers.add("Hogwarts")
 
         if "Ogre" in owned:
@@ -913,6 +917,9 @@ class GameState(State):
 
         if "802" in owned:
             # No idea how to get this one variable
+            if self.playerInfo.amountOfHands == 0:
+                total_chips *= 2
+                hand_mult *= 2
             self.activated_jokers.add("802")
 
         procrastinate = False
