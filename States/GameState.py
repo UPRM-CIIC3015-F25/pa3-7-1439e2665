@@ -872,9 +872,9 @@ class GameState(State):
             self.activated_jokers.add("Micheal Myers")
 
         if "Fibonacci" in owned:
-            # I need to fix this
-            # if "Ace" in hand or "2" in hand or "3" in hand or "5" in hand or "8" in hand:
-            #     hand_mult += 8
+            for hand in used_cards:
+                if "ACE" == hand.rank.name or 2 == hand.rank.value or 3 == hand.rank.value or 5 == hand.rank.value or 8 == hand.rank.value:
+                    hand_mult += 8
             self.activated_jokers.add("Fibonacci")
 
         if "Gauntlet" in owned:
@@ -902,10 +902,10 @@ class GameState(State):
 
         if "Hogwarts" in owned:
             for hand in used_cards:
-                if "Ace" in hand:
-                    hand_mult += 4
-                    total_chips += 20
-            self.activated_jokers.add("Hogwarts")
+                if "ACE" == hand.rank.name:
+                    hand_mult += 8
+                    break
+        self.activated_jokers.add("Hogwarts")
 
         if "Ogre" in owned:
             hand_mult += (len(owned)*3)
@@ -981,9 +981,5 @@ class GameState(State):
         if selected_card in self.cardsSelectedRect:
             del self.cardsSelectedRect[selected_card]
         self.discardCards(removeFromHand)
-
-
-
-
 
 
