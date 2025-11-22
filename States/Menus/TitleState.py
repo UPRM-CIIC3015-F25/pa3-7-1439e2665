@@ -253,9 +253,11 @@ class StartState(State):
             self.isFinished = True
             self.nextState = None
 
-        if events.type == pygame.KEYDOWN and events.key == pygame.K_ESCAPE:
+        if events.type == pygame.KEYDOWN and events.key == pygame.K_ESCAPE and not self.showPlayOverlay:
             self.isFinished = True
             self.nextState = None
+        elif events.type == pygame.KEYDOWN and events.key == pygame.K_ESCAPE and self.showPlayOverlay:
+            self.showPlayOverlay = False
 
                     # Mouse events
         if events.type == pygame.MOUSEBUTTONDOWN:
@@ -305,6 +307,7 @@ class StartState(State):
             elif self.buttonInstructions.collidepoint(mousePosbuttonBar):
                 self.buttonSound.play()
                 self.showHelpScreen = True  # show help overlay
+
             elif self.buttonSettings.collidepoint(mousePosbuttonBar):
                 State.screenshot = self.screen.copy()
                 self.buttonSound.play()

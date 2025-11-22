@@ -542,6 +542,12 @@ class GameState(State):
         mousePosPlayerOpcions = (mousePos[0] - self.playerOpcionsRect.x, mousePos[1] - self.playerOpcionsRect.y)
 
         if events.type == pygame.QUIT:
+            self.saver.save_game(
+                player_info_obj=self.playerInfo,  # Pass the PlayerInfo instance
+                hand=self.hand,
+                deck=self.deck,
+                activated_jokers=self.activated_jokers
+            )
             self.isFinished = True
             self.nextState = "StartState"
 
